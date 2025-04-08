@@ -57,11 +57,13 @@ button {
 
 }
 
-.operator {
-    background-color: orange;
+.operator,
+#equals {
+    background-color: #ffa600;
 
 }
 
-.other {
+.other,
+.operator.top-row {
     background-color: lightsteelblue;
 }
