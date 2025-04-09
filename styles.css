@@ -64,6 +64,6 @@ button {
 }
 
 .other,
-.operator.top-row {
-    background-color: lightsteelblue;
+#sign {
+    background-color: #b0c4de;
 }

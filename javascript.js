@@ -1,8 +1,8 @@
-var display = '';
-var num1 = null;
-var num2 = null;
-var operator = null;
-var answer = null;
+let display = '';
+let num1 = null;
+let num2 = null;
+let operator = null;
+let answer = null;
 
 const buttons = document.querySelectorAll('button');
 
@@ -16,103 +16,138 @@ buttons.forEach((button) => {
 function updateTextField(value) {
     const textField = document.querySelector('#textField');
 
-    if (value === 'sign') {
-        console.log(display.charAt(0));
-        if (display.charAt(0) === '-') {
-            display = display.slice(1);
-        } else {
-            display = '-' + display;
-        }
-        console.log(display.charAt(0));
-    } else {
-        display = display + value;
-        if (display.length > 19) {
-            display = display.substring(0, 19);
-        }
-
+    if (value != '.' && display === '0') {
+        display = '';
+    } else if (value === '-') {
+        return display;
     }
 
-    const data = textField.textContent = display;
-    return data;
+    switch (value) {
+        case 'sign':
+            if (answer != null) {
+                num1 = answer;
+                answer = null;
+            }
+            if (display.charAt(0) === '-') {
+                display.subString(1);
+            } else {
+                display = `-${display}`;
+            }
+            break;
+        default:
+            display = display + value;
+            if (display.length > 19) {
+                display = display.substring(0, 19);
+            }
+    }
+
+    return data = textField.textContent = display;
 }
 
 function operate(clickedButton) {
 
     const className = clickedButton.className;
-    console.log(className + ' ' + clickedButton.id);
 
-    if (num1 != null && operator != null && num2 === null) {
+    if (num1 != null 
+        && operator != null 
+        && num2 === null) {
         display = '';
     }
 
-    if (className === 'operator') { //operator
-        if (answer != null) {
-            num1 = answer;
-            answer = null;
-        }
-        if (operator === null && num2 === null) {
-            clickedButton.style.background = '#ffa600a6';
-            operator = clickedButton.id;
-        } else if (operator != null && num2 === null) {
-            num2 = num1;
-            //run className == 'other' by passing 'equals'
-        }
+    switch (className) {
+        case 'operator':
+            getOperator(clickedButton);
+            break;
+        case 'other':
+            getOther(clickedButton);
+            break;
+        case 'operand':
+            getOperand(clickedButton);
+            break;
+    }
 
-    } else if(className === 'other') { //input is not a operator (AC, +/-, )
-        if (operator != null) document.getElementById(`${operator}`).style.background = '#ffa600';  //Breaks after pressing = since operator is null (either put in if statement of (better:) disable = until operator isn't null)
-        if (clickedButton.id === 'clear') {
+}
+
+function getOperator(clickedButton) {
+    if (answer != null) {
+        clickedButton.style.background = '#ffa600a6';
+        num1 = answer;
+        answer = null;
+        operator = clickedButton.id;
+    } else if (operator === null && num2 === null) {
+        clickedButton.style.background = '#ffa600a6';
+        operator = clickedButton.id;
+    } else if (operator != null && num2 === null) {
+        num2 = num1;
+        calculate();
+        updateTextField(answer);
+        getOther('');
+    } else if (num1 != null && num2 != null && operator != null) {
+        getOther(document.getElementById('equals'));
+    }
+
+}
+
+function getOther(clickedButton) {
+    if (operator != null) document.getElementById(`${operator}`).style.background = '#ffa600';
+
+    switch (clickedButton.id) {
+        case 'clear':
             answer = null;
             display = '';
-            updateTextField('0');   //
-
-        } else if (clickedButton.id === 'equals') {
+            updateTextField('0'); 
+            break;
+        case 'equals':
             display = '';
             calculate();
             updateTextField(answer);
-        } else if (clickedButton.id === 'sign') {
-            updateTextField('sign');
-        }
-
-        num1 = null;
-        num2 = null;
-        operator = null;
-
-    } else if (className === 'operand'){ //input is a number (operand)
-        if (operator === null && num2 === null) {
-            if (answer != null && num1 === null) {
-                display = ' ';
-            }
-            answer = null;
-            num1 = updateTextField(clickedButton.value);
-        } else {
-            num2 = updateTextField(clickedButton.value);
-        }
+            break;
     }
 
-    console.log(num1 + ' ' + operator + ' ' + num2 + ' ' + answer);
+    num1 = null;
+    num2 = null;
+    operator = null;
+}
+
+function getOperand(clickedButton) {
+    if (display.indexOf('.') != -1 && clickedButton.id === '.') return;
+    if (clickedButton.id === 'sign') updateTextField('sign');
+
+    if (operator === null && num2 === null) {
+        if (answer != null && num1 === null) {
+            display = ' ';
+        }
+        answer = null;
+        num1 = updateTextField(clickedButton.value);
+    } else {
+        num2 = updateTextField(clickedButton.value);
+    }
 }
 
 function calculate() {
     const num1_Cal = Number(num1);
     const num2_Cal = Number(num2);
+    let solution = null;
 
     switch (operator) {
         case '%':
-            answer = (num1_Cal % num2_Cal);
+            solution = num1_Cal % num2_Cal;
             break;
         case '/':
-            answer = Math.round((num1_Cal / num2_Cal) * 100) / 100;
+            solution = num1_Cal / num2_Cal;
             break;
         case '*':
-            answer = num1_Cal * num2_Cal;
+            solution = num1_Cal * num2_Cal;
             break;
         case '-':
-            answer = num1_Cal - num2_Cal;
+            solution = num1_Cal - num2_Cal;
             break;
         case '+':
-            answer = num1_Cal + num2_Cal;
+            solution = num1_Cal + num2_Cal;
             break;
         default:
-            console.log('error');
+            console.log('Error');
     }
+    answer = Math.round(solution * 100) / 100;
+
 }
